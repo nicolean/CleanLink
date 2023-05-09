@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Share, Alert } from 'react-native';
+import { Share, Alert, StatusBar } from 'react-native';
 import { NativeBaseProvider, extendTheme, Box, VStack, Text, TextArea, Input, Button, Link } from 'native-base';
 
 export default function App() {
@@ -58,6 +58,7 @@ export default function App() {
 
   return (
     <NativeBaseProvider theme={theme}>
+      <StatusBar animated={true} barStyle="dark-content" showHideTransition="slide" />
       <Box safeArea p={5}>
         <VStack space={4} alignItems="center">
           <Text>Enter your link here</Text>
