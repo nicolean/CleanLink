@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Share, Alert, StatusBar } from 'react-native';
-import { NativeBaseProvider, extendTheme, Box, VStack, Text, TextArea, Input, Button, Link } from 'native-base';
+import { NativeBaseProvider, extendTheme, Box, VStack, Text, TextArea, Input, Button, Link, FlatList } from 'native-base';
+import parameterFilters from './data/parameter-filters';
 
 export default function App() {
   const theme = extendTheme({
@@ -22,13 +23,31 @@ export default function App() {
 
   const [link, setLink] = useState('');
   const [cleanLink, setCleanLink] = useState('');
+  const [removedTags, setRemovedTags] = useState([]);
   const [isEditActive, setIsEditActive] = useState(false);
 
   const onPressClean = () => {
     const queryStringIndex = link.indexOf('?');
-    console.log('queryStringIndex', queryStringIndex);
 
-    setCleanLink('https://www.google.com');
+    if (queryStringIndex < 0) {
+      return;
+    }
+
+    const queryString = link.slice(queryStringIndex);
+    const regexList = new RegExp(`([?&](${parameterFilters.join("|")})=[^&#]*)`, 'gi');
+    const matches = queryString.match(regexList) || [];
+
+    console.log('queryString', queryString);
+    console.log('matches', matches);
+
+    setRemovedTags(matches);
+
+    const cleanQueryString = queryString.replace(regexList, '');
+
+    console.log('cleanQueryString', cleanQueryString);
+    console.log('cleanLink', link.slice(0, queryStringIndex) + cleanQueryString);
+
+    setCleanLink(link.slice(0, queryStringIndex) + cleanQueryString);
   }
 
   const onReset = () => {
@@ -71,9 +90,17 @@ export default function App() {
           <Button onPress={onPressClean} w="100%">Clean 🧹</Button>
         </VStack>
           { cleanLink &&
-            <VStack mt={4} space={4} alignItems="center">
+            <VStack mt={8} space={4} alignItems="center">
               <Text>Clean Link</Text>
               <TextArea h={20} w="100%" value={cleanLink} onChangeText={setCleanLink} />
+              {
+                removedTags.length > 0 &&
+                  <>
+                    <Text>Removed Tags</Text>
+                    <FlatList data={removedTags} renderItem={({item}) => <Box w="100%" alignItems="left">{item}</Box>}
+                    keyExtractor={(item, index) => index} />
+                  </>
+              }
               <Button onPress={onReset} w="100%">Reset</Button>
               <Box alignItems="center">
                 <Link href={cleanLink} isExternal>Test Clean Link</Link>
